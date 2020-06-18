@@ -86,6 +86,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
    Scalar tmplam = 0, f2 = 0;
 
    while (true) {
+      MSG("adjust x by dx = " << alam*p.transpose());
       x = xold + alam*p;
       fmin = func(x);
 
@@ -153,11 +154,8 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       fold = fmin;
       // solve linear equations by LU decomposition
       p = jac.colPivHouseholderQr().solve(-res.y);
-      // do line search, @todo
+      // do line search
       const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
-      // do step
-      MSG("doing step by dx = " << p.transpose());
-      // res.x = xold + p;
       res.y = f(res.x);
       // check for convergence
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
