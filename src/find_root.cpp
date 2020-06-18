@@ -64,7 +64,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
    Vec fvec = f(init);
 
    if (max_abs(fvec) < 0.01*deriv_eps)
-      return Result();
+      return res;
 
    const auto stpmax = step_max(res.x);
    const auto n = init.size();
