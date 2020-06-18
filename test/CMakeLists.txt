@@ -25,3 +25,4 @@ function(add_optimize_test name)
 endfunction()
 
 add_optimize_test(test_find_minimum)
+add_optimize_test(test_find_root)

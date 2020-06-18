@@ -1,5 +1,6 @@
 add_library(optimize
   find_minimum.cpp
+  find_root.cpp
   )
 target_include_directories(
   optimize
