@@ -67,29 +67,29 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 
 /// returns true on error, false otherwise
 template <class Fmin>
-bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
+bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
                  Vec& x, Scalar& fmin, Scalar stpmax, Fmin func)
 {
-   // scale p if attempted step is too big
+   // scale dx if attempted step is too big
    {
-      const auto sum = std::sqrt(p.dot(p));
+      const auto sum = std::sqrt(dx.dot(dx));
       if (sum > stpmax) {
          const double scale = stpmax/sum;
          if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
             return true; // error
-         p *= scale;
+         dx *= scale;
       }
    }
 
-   const Scalar slope = grad.dot(p);
+   const Scalar slope = grad.dot(dx);
    const Scalar alf = 1e-4;
-   const Scalar alamin = 1e-7/calc_max_rel(p, xold);
+   const Scalar alamin = 1e-7/calc_max_rel(dx, xold);
    Scalar alam = 1, alam2 = 0;
    Scalar tmplam = 0, fmin2 = 0;
 
    while (true) {
-      MSG("adjust x by dx = " << alam*p.transpose());
-      x = xold + alam*p;
+      MSG("adjust x by dx = " << alam*dx.transpose());
+      x = xold + alam*dx;
       fmin = func(x);
 
       if (alam < alamin) {
@@ -143,7 +143,7 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
    const Scalar stpmax = calc_max_step(res.x);
    Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
-   Vec grad(n), xold(n), p(n);
+   Vec grad(n), xold(n), dx(n);
    auto fold = fmin;
 
    while (res.iterations++ < max_iter && !res.found) {
@@ -155,13 +155,13 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
       jac = fdjac(fn, res.x, res.y);
 
       // solve linear equations
-      p = jac.colPivHouseholderQr().solve(-res.y);
+      dx = jac.colPivHouseholderQr().solve(-res.y);
 
-      if (!p.allFinite())
+      if (!dx.allFinite())
          return res;
 
       grad = jac*res.y;
-      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
+      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
 
       res.y = fn(res.x);
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
