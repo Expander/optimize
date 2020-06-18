@@ -89,12 +89,14 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
       p = -res.y;
       // solve linear equations by LU decomposition
       dx = jac.colPivHouseholderQr().solve(p);
+      // do line search, @todo
+      bool err = false;
       // scale dx
       // auto sum = std::sqrt(dx.dot(dx));
       // if (sum > stpmax)
       //    dx *= stpmax/sum;
+      // do step
       MSG("doing step by dx = " << dx.transpose());
-      // do line search, @todo
       res.x = xold + dx;
       res.y = f(res.x);
       res.found = stop_crit(res.y);
@@ -104,9 +106,11 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
          return res;
       }
       // check for grad(f) being zero (spurious convergence)
-      {
-         const auto den = std::max(fmin, 0.5*n);
-         const auto max_grad = grad.cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0))/den;
+      if (err) {
+         const Scalar den = std::max(fmin, 0.5*n);
+         const Scalar max_grad = grad.cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0)).maxCoeff()/den;
+         res.found = max_grad >= 1e-6;
+         return res;
       }
       // check for convergence on dx
       {
