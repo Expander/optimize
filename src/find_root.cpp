@@ -83,7 +83,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
    const Scalar alf = 1e-4;
    const Scalar alamin = 1e-7/calc_max_rel(p, xold);
    Scalar alam = 1, alam2 = 0;
-   Scalar tmplam = 0, f2 = 0;
+   Scalar tmplam = 0, fmin2 = 0;
 
    while (true) {
       MSG("adjust x by dx = " << alam*p.transpose());
@@ -101,7 +101,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
             tmplam = -slope/(2*(fmin - fold - slope));
          } else {
             const Scalar rhs1 = fmin - fold - alam*slope;
-            const Scalar rhs2 = f2 - fold - alam2*slope;
+            const Scalar rhs2 = fmin2 - fold - alam2*slope;
             const Scalar a = (rhs1/(alam*alam) - rhs2/(alam2*alam2))/(alam - alam2);
             const Scalar b = (-alam2*rhs1/(alam*alam) + alam*rhs2/(alam2*alam2))/(alam - alam2);
 
@@ -122,7 +122,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
       }
 
       alam2 = alam;
-      f2 = fmin;
+      fmin2 = fmin;
       alam = std::max(tmplam, 0.1*alam);
    }
 
