@@ -4,7 +4,8 @@
 #include <iostream>
 #include <Eigen/QR>
 
-#define MSG(x) std::cerr << x << std::endl;
+#define VERBOSE_MSG(x) std::cerr << x << std::endl;
+#define ERROR_MSG(x) std::cerr << "Error: " << x << std::endl;
 
 namespace optimize {
 namespace root {
@@ -88,7 +89,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
    Scalar tmplam = 0, fmin2 = 0;
 
    while (true) {
-      MSG("adjust x by dx = " << alam*dx.transpose());
+      VERBOSE_MSG("adjust x by dx = " << alam*dx.transpose());
       x = xold + alam*dx;
       fmin = func(x);
 
@@ -147,18 +148,18 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
    auto fold = fmin;
 
    while (res.iterations++ < max_iter && !res.found) {
-      MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
+      VERBOSE_MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
 
       xold = res.x;
       fold = fmin;
 
       jac = fdjac(fn, res.x, res.y);
-
-      // solve linear equations
       dx = jac.colPivHouseholderQr().solve(-res.y);
 
-      if (!dx.allFinite())
+      if (!dx.allFinite()) {
+         ERROR_MSG("dx is infinite");
          return res;
+      }
 
       grad = jac*res.y;
       const bool err = line_search(xold, fold, grad, dx, res.x, fmin, max_step, [] (const Vec& x) { return calc_fmin(x); });
