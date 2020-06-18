@@ -19,6 +19,11 @@ Scalar max_abs(const Vec& x)
    return x.cwiseAbs().maxCoeff();
 }
 
+Scalar calc_max_dx(const Vec& x1, const Vec& x2)
+{
+   return (x1 - x2).cwiseAbs().cwiseProduct(x1.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
+}
+
 Scalar calc_max_step(const Vec& x)
 {
    const Scalar sum = x.dot(x);
@@ -94,8 +99,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       res.x = xold + dx;
       res.y = f(res.x);
       // check for convergence
-      const Scalar max_dx = (res.x - xold).cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
-      res.found = stop_crit(res.y, max_dx);
+      res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
       // check for convergence on function values
       if (res.found) {
          MSG("converged!");
