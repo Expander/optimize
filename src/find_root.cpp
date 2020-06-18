@@ -64,30 +64,29 @@ constexpr int max_iter = 200;
 
 Result find_root(Fn f, const Vec& init, Pred stop_crit)
 {
-   Result res{init, false};
-   Vec fvec = f(init);
+   Result res{init, f(init), false};
 
-   if (max_abs(fvec) < 0.01*deriv_eps)
+   if (max_abs(res.y) < 0.01*deriv_eps)
       return res;
 
    const auto stpmax = step_max(res.x);
    const auto n = init.size();
-   const auto fmin = 0.5*fvec.dot(fvec);
+   const auto fmin = 0.5*res.y.dot(res.y);
    int it = 0;
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n), dx(n);
    auto fold = fmin;
 
    while (it++ < max_iter && !res.found) {
-      MSG("[" << it << "]: x = " << res.x.transpose() << ", f(x) = " << fvec.transpose());
-      jac = fdjac(f, res.x, fvec);
+      MSG("[" << it << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
+      jac = fdjac(f, res.x, res.y);
       // compute grad(f) for line search
-      grad = jac*fvec;
+      grad = jac*res.y;
       // store x and fmin
       xold = res.x;
       fold = fmin;
       // r.h.s. or linear equations
-      p = -fvec;
+      p = -res.y;
       // solve linear equations by LU decomposition
       dx = jac.colPivHouseholderQr().solve(p);
       // scale dx
@@ -97,11 +96,11 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
       MSG("doing step by dx = " << dx.transpose());
       // do line search, @todo
       res.x = xold + dx;
-      fvec = f(res.x);
+      res.y = f(res.x);
       // check for convergence on function values
-      if (stop_crit(fvec)) {
-      // if (max_abs(fvec) < deriv_eps) {
-         MSG("converged: max_abs(fvec) = " << max_abs(fvec) << " < " << deriv_eps);
+      if (stop_crit(res.y)) {
+      // if (max_abs(res.y) < deriv_eps) {
+         MSG("converged: max_abs(res.y) = " << max_abs(res.y) << " < " << deriv_eps);
          res.found = true;
          return res;
       }

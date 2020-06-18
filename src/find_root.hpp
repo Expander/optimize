@@ -11,6 +11,7 @@ using Pred = std::function<bool(const Vec&)>;
 
 struct Result {
    Vec x;             ///< point where zero is located
+   Vec y;             ///< function value at x
    bool found{false}; ///< zero has been found
 };
 

@@ -35,7 +35,7 @@ TEST(test_parabola, test_1d)
    const double xroot = xoffset - std::sqrt(-yoffset);
 
    ASSERT_EQ(result.found, true);
-   EXPECT_NEAR(f(result.x)(0), 0.0, precision);
+   EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_NEAR(result.x(0), xroot, 1e-5);
 }
 
