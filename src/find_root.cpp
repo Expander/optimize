@@ -24,6 +24,11 @@ Scalar calc_max_dx(const Vec& x1, const Vec& x2)
    return (x1 - x2).cwiseAbs().cwiseProduct(x1.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
 }
 
+Scalar calc_max_rel(const Vec& x1, const Vec& x2)
+{
+   return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0)).maxCoeff();
+}
+
 Scalar calc_max_step(const Vec& x)
 {
    const Scalar sum = x.dot(x);
@@ -62,6 +67,33 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 
 } // anonymous namespace
 
+
+bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
+                 Vec& x, Scalar& fmin, Scalar stpmax, Fn f)
+{
+   const auto n = x.size();
+
+   // scale p if attempted step is too big
+   {
+      const auto sum = std::sqrt(p.dot(p));
+      if (sum > stpmax)
+         p *= stpmax/sum;
+   }
+
+   const Scalar test = calc_max_rel(p, xold);
+   Scalar alamin = 1e-7/test;
+   Scalar alam = 1.0;
+
+   while (true) {
+      x = xold + alam*p;
+      fmin = calc_fmin(x);
+      break;
+   }
+
+   return false;
+}
+
+
 Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
 {
    Result res{init, f(init), 0, false};
@@ -71,7 +103,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
 
    const auto n = init.size();
    const Scalar stpmax = calc_max_step(res.x);
-   const Scalar fmin = calc_fmin(res.y);
+   Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n);
    auto fold = fmin;
@@ -87,14 +119,10 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // solve linear equations by LU decomposition
       p = jac.colPivHouseholderQr().solve(-res.y);
       // do line search, @todo
-      bool err = false;
-      // scale dx
-      // auto sum = std::sqrt(dx.dot(dx));
-      // if (sum > stpmax)
-      //    dx *= stpmax/sum;
+      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, f);
       // do step
       MSG("doing step by dx = " << p.transpose());
-      res.x = xold + p;
+      // res.x = xold + p;
       res.y = f(res.x);
       // check for convergence
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
@@ -106,7 +134,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // check for grad(f) being zero (spurious convergence)
       if (err) {
          const Scalar den = std::max(fmin, 0.5*n);
-         const Scalar max_grad = grad.cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0)).maxCoeff()/den;
+         const Scalar max_grad = calc_max_rel(grad, res.x)/den;
          res.found = max_grad >= 1e-6;
          return res;
       }
