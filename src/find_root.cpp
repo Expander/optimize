@@ -4,13 +4,13 @@
 #include <iostream>
 #include <Eigen/QR>
 
+#define MSG(x) std::cout << x << std::endl;
+
 namespace optimize {
 namespace root {
-
-using Mat = Eigen::MatrixXd;
-
 namespace {
 
+using Mat = Eigen::MatrixXd;
 constexpr Scalar deriv_eps = 1e-4;
 constexpr Scalar max_step = 100.0;
 
@@ -35,8 +35,6 @@ Scalar calc_max_step(const Vec& x)
    const Scalar n = x.size();
    return max_step*std::max(std::sqrt(sum), n);
 }
-
-#define MSG(x) std::cout << x << std::endl;
 
 Scalar calc_fmin(const Vec& x)
 {
@@ -75,8 +73,12 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
    // scale p if attempted step is too big
    {
       const auto sum = std::sqrt(p.dot(p));
-      if (sum > stpmax)
-         p *= stpmax/sum;
+      if (sum > stpmax) {
+         const double scale = stpmax/sum;
+         if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
+            return true; // error
+         p *= scale;
+      }
    }
 
    const Scalar slope = grad.dot(p);
@@ -130,9 +132,9 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
 }
 
 
-Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
+Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
 {
-   Result res{init, f(init), 0, false};
+   Result res{init, fn(init), 0, false};
 
    if (max_abs(res.y) < 0.01*deriv_eps)
       return res;
@@ -146,23 +148,27 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
 
    while (res.iterations++ < max_iter && !res.found) {
       MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
-      jac = fdjac(f, res.x, res.y);
-      // compute grad(f) for line search
-      grad = jac*res.y;
-      // store x and fmin
+
       xold = res.x;
       fold = fmin;
+
+      jac = fdjac(fn, res.x, res.y);
+
       // solve linear equations
       p = jac.colPivHouseholderQr().solve(-res.y);
-      // do line search
-      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
-      res.y = f(res.x);
-      // check for convergence
-      res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
-      if (res.found) {
-         MSG("converged!");
+
+      if (!p.allFinite())
          return res;
-      }
+
+      grad = jac*res.y;
+      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
+
+      res.y = fn(res.x);
+      res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
+
+      if (res.found)
+         return res;
+
       // check for grad(f) being zero (spurious convergence)
       if (err) {
          const Scalar den = std::max(fmin, 0.5*n);

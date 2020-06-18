@@ -16,6 +16,7 @@ TEST(test_parabola, test_1d)
    const double precision = 1e-10;
    const double xoffset = 0.0;
    const double yoffset = 0.0;
+   const double xroot = xoffset - std::sqrt(-yoffset);
    const unsigned max_iter = 100;
    unsigned ncalls = 0;
 
@@ -35,8 +36,6 @@ TEST(test_parabola, test_1d)
 
    const auto result = find_root(f, init, stop_crit, max_iter);
 
-   const double xroot = xoffset - std::sqrt(-yoffset);
-
    ASSERT_EQ(result.found, true);
    EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_NEAR(result.x(0), xroot, 1e-5);
@@ -44,6 +43,40 @@ TEST(test_parabola, test_1d)
    EXPECT_LE(ncalls, 1 + 2*result.iterations);
    std::cout << "number of function calls: " << ncalls << std::endl;
 }
+
+
+TEST(test_inv_gauss, test_1d)
+{
+   using namespace optimize::root;
+
+   const double precision = 1e-10;
+   const unsigned max_iter = 100;
+   unsigned ncalls = 0;
+
+   const Fn f = [&ncalls] (const Vec& v) -> Vec {
+      ncalls++;
+      Vec y(v.size());
+      y(0) = -std::exp(-v(0)*v(0)) + 0.5;
+      return y;
+   };
+
+   const Pred stop_crit = [precision] (const Vec& v, Scalar max_dx) -> bool {
+      return std::abs(v(0)) < precision || max_dx < precision;
+   };
+
+   Vec init(1);
+   init << 4.0;
+
+   const auto result = find_root(f, init, stop_crit, max_iter);
+
+   ASSERT_EQ(result.found, true);
+   EXPECT_NEAR(result.y(0), 0.0, precision);
+   // EXPECT_NEAR(result.x(0), xroot, 1e-5);
+   EXPECT_LT(result.iterations, max_iter);
+   EXPECT_LE(ncalls, 1 + 2*result.iterations);
+   std::cout << "number of function calls: " << ncalls << std::endl;
+}
+
 
 int main(int argc, char** argv)
 {
