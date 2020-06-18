@@ -4,7 +4,7 @@
 #include <iostream>
 #include <Eigen/QR>
 
-#define MSG(x) std::cout << x << std::endl;
+#define MSG(x) std::cerr << x << std::endl;
 
 namespace optimize {
 namespace root {
