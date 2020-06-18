@@ -152,14 +152,13 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // store x and fmin
       xold = res.x;
       fold = fmin;
-      // solve linear equations by LU decomposition
+      // solve linear equations
       p = jac.colPivHouseholderQr().solve(-res.y);
       // do line search
       const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
       res.y = f(res.x);
       // check for convergence
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
-      // check for convergence on function values
       if (res.found) {
          MSG("converged!");
          return res;
