@@ -25,7 +25,7 @@ TEST(test_parabola, test_1d)
       return y;
    };
 
-   const Pred stop_crit = [&precision] (const Vec& v) -> bool {
+   const Pred stop_crit = [precision] (const Vec& v) -> bool {
       return std::abs(v(0)) < precision;
    };
 
