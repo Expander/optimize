@@ -30,11 +30,10 @@ Scalar step_max(const Vec& x)
 
 #define MSG(x) std::cout << x << std::endl;
 
-// Scalar fmin(Fn f, const Vec& x)
-// {
-//    const auto y = f(x);
-//    return 0.5*y.dot(y);
-// }
+Scalar calc_fmin(const Vec& x)
+{
+   return 0.5*x.dot(x);
+}
 
 /// calculates Jacobian, y = f(x)
 Mat fdjac(Fn f, const Vec& x, const Vec& y)
@@ -67,9 +66,9 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
    if (max_abs(res.y) < 0.01*deriv_eps)
       return res;
 
-   const auto stpmax = step_max(res.x);
    const auto n = init.size();
-   const auto fmin = 0.5*res.y.dot(res.y);
+   const Scalar stpmax = step_max(res.x);
+   const Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n), dx(n);
    auto fold = fmin;
