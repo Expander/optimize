@@ -97,11 +97,10 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
       // do line search, @todo
       res.x = xold + dx;
       res.y = f(res.x);
+      res.found = stop_crit(res.y);
       // check for convergence on function values
-      if (stop_crit(res.y)) {
-      // if (max_abs(res.y) < deriv_eps) {
-         MSG("converged: max_abs(res.y) = " << max_abs(res.y) << " < " << deriv_eps);
-         res.found = true;
+      if (res.found) {
+         MSG("converged!");
          return res;
       }
       // check for grad(f) being zero (spurious convergence)
