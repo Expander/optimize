@@ -110,6 +110,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
          return res;
       }
       // check for convergence on dx
+      // @todo move check into stop_crit
       {
          const auto max_dx = (res.x - xold).cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
          if (max_dx < min_dx) {
