@@ -1,6 +1,8 @@
 #include "find_root.hpp"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <Eigen/QR>
 
 namespace optimize {
 namespace root {
@@ -25,6 +27,8 @@ Scalar step_max(const Vec& x)
    const Scalar n = x.size();
    return max_step*std::max(std::sqrt(sum), n);
 }
+
+#define MSG(x) std::cout << x << std::endl;
 
 // Scalar fmin(Fn f, const Vec& x)
 // {
@@ -71,10 +75,11 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
    const auto fmin = 0.5*fvec.dot(fvec);
    int it = 0;
    Mat jac(n,n);
-   Vec grad(n), xold(n), p(n);
+   Vec grad(n), xold(n), p(n), dx(n);
    auto fold = fmin;
 
    while (it++ < max_iter && !res.found) {
+      MSG("[" << it << "]: x = " << res.x.transpose() << ", f(x) = " << fvec.transpose());
       jac = fdjac(f, res.x, fvec);
       // compute grad(f) for line search
       grad = jac*fvec;
@@ -84,12 +89,22 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
       // r.h.s. or linear equations
       p = -fvec;
       // solve linear equations by LU decomposition
-      // @todo
-      // do line search
-      // @todo
+      dx = jac.colPivHouseholderQr().solve(p);
+      // scale dx
+      // auto sum = std::sqrt(dx.dot(dx));
+      // if (sum > stpmax)
+      //    dx *= stpmax/sum;
+      MSG("doing step by dx = " << dx.transpose());
+      // do line search, @todo
+      res.x = xold + dx;
+      fvec = f(res.x);
       // check for convergence on function values
-      if (max_abs(fvec) < deriv_eps)
+      if (stop_crit(fvec)) {
+      // if (max_abs(fvec) < deriv_eps) {
+         MSG("converged: max_abs(fvec) = " << max_abs(fvec) << " < " << deriv_eps);
+         res.found = true;
          return res;
+      }
       // check for grad(f) being zero (spurious convergence)
       {
          const auto den = std::max(fmin, 0.5*n);

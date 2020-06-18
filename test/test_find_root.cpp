@@ -32,7 +32,11 @@ TEST(test_parabola, test_1d)
 
    const auto result = find_root(f, init, stop_crit);
 
+   const double xroot = xoffset - std::sqrt(-yoffset);
+
    ASSERT_EQ(result.found, true);
+   EXPECT_NEAR(f(result.x)(0), 0.0, precision);
+   EXPECT_NEAR(result.x(0), xroot, 1e-5);
 }
 
 int main(int argc, char** argv)
