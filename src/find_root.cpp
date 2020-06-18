@@ -71,13 +71,15 @@ template <class Fmin>
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
                  Vec& x, Scalar& fmin, Scalar max_step, Fmin func)
 {
+   constexpr bool ok = false, error = true;
+
    // scale dx if attempted step is too big
    {
       const auto sum = std::sqrt(dx.dot(dx));
       if (sum > max_step) {
          const double scale = max_step/sum;
          if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
-            return true; // error
+            return error; // error
          dx *= scale;
       }
    }
@@ -88,16 +90,16 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
    Scalar alam = 1, alam2 = 0;
    Scalar tmplam = 0, fmin2 = 0;
 
-   while (true) {
+   while (error) {
       VERBOSE_MSG("adjust x by dx = " << alam*dx.transpose());
       x = xold + alam*dx;
       fmin = func(x);
 
       if (alam < alamin) {
          x = xold;
-         return true; // error
+         return error; // error
       } else if (fmin <= fold + alf*alam*slope) {
-         return false; // ok
+         return ok;
       } else {
          if (alam == 1) {
             // first time
@@ -129,7 +131,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
       alam = std::max(tmplam, 0.1*alam);
    }
 
-   return false; // ok
+   return ok;
 }
 
 
