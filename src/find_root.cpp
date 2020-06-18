@@ -8,13 +8,11 @@ namespace optimize {
 namespace root {
 
 using Mat = Eigen::MatrixXd;
-using Scalar = double;
 
 namespace {
 
 constexpr Scalar deriv_eps = 1e-4;
 constexpr Scalar max_step = 100.0;
-constexpr Scalar min_dx = 1e-7;
 
 Scalar max_abs(const Vec& x)
 {
@@ -95,7 +93,9 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       MSG("doing step by dx = " << dx.transpose());
       res.x = xold + dx;
       res.y = f(res.x);
-      res.found = stop_crit(res.y);
+      // check for convergence
+      const Scalar max_dx = (res.x - xold).cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
+      res.found = stop_crit(res.y, max_dx);
       // check for convergence on function values
       if (res.found) {
          MSG("converged!");
@@ -107,15 +107,6 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
          const Scalar max_grad = grad.cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0)).maxCoeff()/den;
          res.found = max_grad >= 1e-6;
          return res;
-      }
-      // check for convergence on dx
-      // @todo move check into stop_crit
-      {
-         const auto max_dx = (res.x - xold).cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
-         if (max_dx < min_dx) {
-            res.found = true;
-            return res;
-         }
       }
    }
 

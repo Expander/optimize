@@ -5,9 +5,10 @@
 namespace optimize {
 namespace root {
 
+using Scalar = double;
 using Vec = Eigen::VectorXd;
 using Fn = std::function<Vec(const Vec&)>;
-using Pred = std::function<bool(const Vec&)>;
+using Pred = std::function<bool(const Vec&, Scalar)>;
 
 struct Result {
    Vec x;                  ///< point where zero is located

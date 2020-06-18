@@ -26,8 +26,8 @@ TEST(test_parabola, test_1d)
       return y;
    };
 
-   const Pred stop_crit = [precision] (const Vec& v) -> bool {
-      return std::abs(v(0)) < precision;
+   const Pred stop_crit = [precision] (const Vec& v, Scalar max_dx) -> bool {
+      return std::abs(v(0)) < precision || max_dx < precision;
    };
 
    Vec init(1);
