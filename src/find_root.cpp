@@ -12,7 +12,6 @@ namespace {
 
 using Mat = Eigen::MatrixXd;
 constexpr Scalar deriv_eps = 1e-4;
-constexpr Scalar max_step = 100.0;
 
 Scalar max_abs(const Vec& x)
 {
@@ -31,6 +30,7 @@ Scalar calc_max_rel(const Vec& x1, const Vec& x2)
 
 Scalar calc_max_step(const Vec& x)
 {
+   constexpr Scalar max_step = 100.0;
    const Scalar sum = x.dot(x);
    const Scalar n = x.size();
    return max_step*std::max(std::sqrt(sum), n);
@@ -68,13 +68,13 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 /// returns true on error, false otherwise
 template <class Fmin>
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
-                 Vec& x, Scalar& fmin, Scalar stpmax, Fmin func)
+                 Vec& x, Scalar& fmin, Scalar max_step, Fmin func)
 {
    // scale dx if attempted step is too big
    {
       const auto sum = std::sqrt(dx.dot(dx));
-      if (sum > stpmax) {
-         const double scale = stpmax/sum;
+      if (sum > max_step) {
+         const double scale = max_step/sum;
          if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
             return true; // error
          dx *= scale;
@@ -140,7 +140,7 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
       return res;
 
    const auto n = init.size();
-   const Scalar stpmax = calc_max_step(res.x);
+   const Scalar max_step = calc_max_step(res.x);
    Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), dx(n);
@@ -161,7 +161,7 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
          return res;
 
       grad = jac*res.y;
-      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
+      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, max_step, [] (const Vec& x) { return calc_fmin(x); });
 
       res.y = fn(res.x);
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));

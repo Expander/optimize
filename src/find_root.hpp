@@ -18,7 +18,7 @@ struct Result {
 };
 
 /// find minimum of function f
-Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter);
+Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter);
 
 } // namespace root
 } // namespace optimize
