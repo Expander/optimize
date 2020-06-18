@@ -67,12 +67,11 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 
 } // anonymous namespace
 
-
+/// returns true on error, false otherwise
+template <class Fmin>
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
-                 Vec& x, Scalar& fmin, Scalar stpmax, Fn f)
+                 Vec& x, Scalar& fmin, Scalar stpmax, Fmin func)
 {
-   const auto n = x.size();
-
    // scale p if attempted step is too big
    {
       const auto sum = std::sqrt(p.dot(p));
@@ -80,17 +79,53 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& p,
          p *= stpmax/sum;
    }
 
-   const Scalar test = calc_max_rel(p, xold);
-   Scalar alamin = 1e-7/test;
-   Scalar alam = 1.0;
+   const Scalar slope = grad.dot(p);
+   const Scalar alf = 1e-4;
+   const Scalar alamin = 1e-7/calc_max_rel(p, xold);
+   Scalar alam = 1, alam2 = 0;
+   Scalar tmplam = 0, f2 = 0;
 
    while (true) {
       x = xold + alam*p;
-      fmin = calc_fmin(x);
-      break;
+      fmin = func(x);
+
+      if (alam < alamin) {
+         x = xold;
+         return true; // error
+      } else if (fmin <= fold + alf*alam*slope) {
+         return false; // ok
+      } else {
+         if (alam == 1) {
+            // first time
+            tmplam = -slope/(2*(fmin - fold - slope));
+         } else {
+            const Scalar rhs1 = fmin - fold - alam*slope;
+            const Scalar rhs2 = f2 - fold - alam2*slope;
+            const Scalar a = (rhs1/(alam*alam) - rhs2/(alam2*alam2))/(alam - alam2);
+            const Scalar b = (-alam2*rhs1/(alam*alam) + alam*rhs2/(alam2*alam2))/(alam - alam2);
+
+            if (a == 0) {
+               tmplam = -slope/(2.0*b);
+            } else {
+               const Scalar disc = b*b - 3*a*slope;
+               if (disc < 0)
+                  tmplam = 0.5*alam;
+               else if (b <= 0.0)
+                  tmplam = (-b + std::sqrt(disc))/(3*a);
+               else
+                  tmplam = -slope/(b + std::sqrt(disc));
+            }
+            if (tmplam > 0.5*alam)
+               tmplam = 0.5*alam;
+         }
+      }
+
+      alam2 = alam;
+      f2 = fmin;
+      alam = std::max(tmplam, 0.1*alam);
    }
 
-   return false;
+   return false; // ok
 }
 
 
@@ -119,7 +154,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // solve linear equations by LU decomposition
       p = jac.colPivHouseholderQr().solve(-res.y);
       // do line search, @todo
-      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, f);
+      const bool err = line_search(xold, fold, grad, p, res.x, fmin, stpmax, [] (const Vec& x) { return calc_fmin(x); });
       // do step
       MSG("doing step by dx = " << p.transpose());
       // res.x = xold + p;
