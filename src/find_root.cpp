@@ -60,11 +60,9 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 
 } // anonymous namespace
 
-constexpr int max_iter = 200;
-
-Result find_root(Fn f, const Vec& init, Pred stop_crit)
+Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
 {
-   Result res{init, f(init), false};
+   Result res{init, f(init), 0, false};
 
    if (max_abs(res.y) < 0.01*deriv_eps)
       return res;
@@ -72,13 +70,12 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
    const auto stpmax = step_max(res.x);
    const auto n = init.size();
    const auto fmin = 0.5*res.y.dot(res.y);
-   int it = 0;
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n), dx(n);
    auto fold = fmin;
 
-   while (it++ < max_iter && !res.found) {
-      MSG("[" << it << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
+   while (res.iterations++ < max_iter && !res.found) {
+      MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
       jac = fdjac(f, res.x, res.y);
       // compute grad(f) for line search
       grad = jac*res.y;

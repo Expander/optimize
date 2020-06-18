@@ -16,6 +16,7 @@ TEST(test_parabola, test_1d)
    const double precision = 1e-10;
    const double xoffset = 0.0;
    const double yoffset = 0.0;
+   const unsigned max_iter = 100;
    unsigned ncalls = 0;
 
    const Fn f = [xoffset, yoffset, &ncalls] (const Vec& v) -> Vec {
@@ -32,13 +33,15 @@ TEST(test_parabola, test_1d)
    Vec init(1);
    init << 2.0;
 
-   const auto result = find_root(f, init, stop_crit);
+   const auto result = find_root(f, init, stop_crit, max_iter);
 
    const double xroot = xoffset - std::sqrt(-yoffset);
 
    ASSERT_EQ(result.found, true);
    EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_NEAR(result.x(0), xroot, 1e-5);
+   EXPECT_LT(result.iterations, max_iter);
+   EXPECT_LE(ncalls, 1 + 2*result.iterations);
    std::cout << "number of function calls: " << ncalls << std::endl;
 }
 
