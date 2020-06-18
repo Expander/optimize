@@ -21,7 +21,7 @@ Scalar max_abs(const Vec& x)
    return x.cwiseAbs().maxCoeff();
 }
 
-Scalar step_max(const Vec& x)
+Scalar calc_max_step(const Vec& x)
 {
    const Scalar sum = x.dot(x);
    const Scalar n = x.size();
@@ -67,7 +67,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       return res;
 
    const auto n = init.size();
-   const Scalar stpmax = step_max(res.x);
+   const Scalar stpmax = calc_max_step(res.x);
    const Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n), dx(n);
