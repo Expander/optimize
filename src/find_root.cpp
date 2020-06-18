@@ -73,7 +73,7 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
    const Scalar stpmax = calc_max_step(res.x);
    const Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
-   Vec grad(n), xold(n), p(n), dx(n);
+   Vec grad(n), xold(n), p(n);
    auto fold = fmin;
 
    while (res.iterations++ < max_iter && !res.found) {
@@ -84,10 +84,8 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // store x and fmin
       xold = res.x;
       fold = fmin;
-      // r.h.s. or linear equations
-      p = -res.y;
       // solve linear equations by LU decomposition
-      dx = jac.colPivHouseholderQr().solve(p);
+      p = jac.colPivHouseholderQr().solve(-res.y);
       // do line search, @todo
       bool err = false;
       // scale dx
@@ -95,8 +93,8 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit, unsigned max_iter)
       // if (sum > stpmax)
       //    dx *= stpmax/sum;
       // do step
-      MSG("doing step by dx = " << dx.transpose());
-      res.x = xold + dx;
+      MSG("doing step by dx = " << p.transpose());
+      res.x = xold + p;
       res.y = f(res.x);
       // check for convergence
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
