@@ -60,27 +60,26 @@ constexpr int max_iter = 200;
 
 Result find_root(Fn f, const Vec& init, Pred stop_crit)
 {
-   Vec x(init);
-   Vec fvec = f(x);
+   Result res{init, false};
+   Vec fvec = f(init);
 
    if (max_abs(fvec) < 0.01*deriv_eps)
       return Result();
 
-   const auto stpmax = step_max(x);
+   const auto stpmax = step_max(res.x);
    const auto n = init.size();
    const auto fmin = 0.5*fvec.dot(fvec);
    int it = 0;
-   Result res;
    Mat jac(n,n);
    Vec grad(n), xold(n), p(n);
    auto fold = fmin;
 
    while (it++ < max_iter && !res.found) {
-      jac = fdjac(f, x, fvec);
+      jac = fdjac(f, res.x, fvec);
       // compute grad(f) for line search
       grad = jac*fvec;
       // store x and fmin
-      xold = x;
+      xold = res.x;
       fold = fmin;
       // r.h.s. or linear equations
       p = -fvec;
@@ -94,13 +93,15 @@ Result find_root(Fn f, const Vec& init, Pred stop_crit)
       // check for grad(f) being zero (spurious convergence)
       {
          const auto den = std::max(fmin, 0.5*n);
-         const auto max_grad = grad.cwiseAbs().cwiseProduct(x.cwiseAbs().cwiseMax(1.0))/den;
+         const auto max_grad = grad.cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0))/den;
       }
       // check for convergence on dx
       {
-         const auto max_dx = (x - xold).cwiseAbs().cwiseProduct(x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
-         if (max_dx < min_dx)
+         const auto max_dx = (res.x - xold).cwiseAbs().cwiseProduct(res.x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
+         if (max_dx < min_dx) {
+            res.found = true;
             return res;
+         }
       }
    }
 
