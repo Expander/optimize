@@ -17,7 +17,7 @@ TEST(test_parabola, test_1d)
    const double xoffset = 0.0;
    const double yoffset = 0.0;
 
-   const Fn f = [&xoffset, &yoffset] (const Vec& v) -> Scalar {
+   const Fn f = [&xoffset, &yoffset] (const Vec& v) -> Val {
       return sqr(v(0) - xoffset) + yoffset;
    };
 

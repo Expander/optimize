@@ -5,14 +5,14 @@
 namespace optimize {
 namespace minimize {
 
-using Scalar = double;
+using Val = double;
 using Vec = Eigen::VectorXd;
-using Fn = std::function<double(const Vec&)>;
+using Fn = std::function<Val(const Vec&)>;
 using Pred = std::function<bool(const Vec&, const Vec&)>;
 
 struct Result {
    Vec x;             ///< point where minimum is located
-   Scalar min{};      ///< minimum valu, f(x) = min
+   Val min{};         ///< minimum valu, f(x) = min
    bool found{false}; ///< minimum has been found
 };
 
