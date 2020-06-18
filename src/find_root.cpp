@@ -1,4 +1,5 @@
 #include "find_root.hpp"
+#include <algorithm>
 #include <cmath>
 
 namespace optimize {
@@ -11,12 +12,25 @@ namespace {
 
 constexpr Scalar deriv_eps = 1e-4;
 constexpr Scalar max_step = 100.0;
+constexpr Scalar min_dx = 1e-7;
 
-Scalar fmin(Fn f, const Vec& x)
+Scalar max_abs(const Vec& x)
 {
-   const auto y = f(x);
-   return 0.5*y.dot(y);
+   return x.cwiseAbs().maxCoeff();
 }
+
+Scalar step_max(const Vec& x)
+{
+   const Scalar sum = x.dot(x);
+   const Scalar n = x.size();
+   return max_step*std::max(std::sqrt(sum), n);
+}
+
+// Scalar fmin(Fn f, const Vec& x)
+// {
+//    const auto y = f(x);
+//    return 0.5*y.dot(y);
+// }
 
 /// calculates Jacobian, y = f(x)
 Mat fdjac(Fn f, const Vec& x, const Vec& y)
@@ -46,12 +60,48 @@ constexpr int max_iter = 200;
 
 Result find_root(Fn f, const Vec& init, Pred stop_crit)
 {
+   Vec x(init);
+   Vec fvec = f(x);
+
+   if (max_abs(fvec) < 0.01*deriv_eps)
+      return Result();
+
+   const auto stpmax = step_max(x);
    const auto n = init.size();
+   const auto fmin = 0.5*fvec.dot(fvec);
    int it = 0;
    Result res;
+   Mat jac(n,n);
+   Vec grad(n), xold(n), p(n);
+   auto fold = fmin;
 
    while (it++ < max_iter && !res.found) {
-      // @todo implement me
+      jac = fdjac(f, x, fvec);
+      // compute grad(f) for line search
+      grad = jac*fvec;
+      // store x and fmin
+      xold = x;
+      fold = fmin;
+      // r.h.s. or linear equations
+      p = -fvec;
+      // solve linear equations by LU decomposition
+      // @todo
+      // do line search
+      // @todo
+      // check for convergence on function values
+      if (max_abs(fvec) < deriv_eps)
+         return res;
+      // check for grad(f) being zero (spurious convergence)
+      {
+         const auto den = std::max(fmin, 0.5*n);
+         const auto max_grad = grad.cwiseAbs().cwiseProduct(x.cwiseAbs().cwiseMax(1.0))/den;
+      }
+      // check for convergence on dx
+      {
+         const auto max_dx = (x - xold).cwiseAbs().cwiseProduct(x.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
+         if (max_dx < min_dx)
+            return res;
+      }
    }
 
    return res;
