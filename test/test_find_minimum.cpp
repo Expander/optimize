@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "find_minimum.hpp"
+#include <cmath>
 
 namespace {
 
@@ -20,10 +21,14 @@ TEST(test_parabola, test_1d)
       return sqr(v(0) - xoffset) + yoffset;
    };
 
+   const Pred stop_crit = [&precision] (const Vec& v1, const Vec& v2) -> bool {
+      return std::abs(v1(0) - v2(0)) < precision;
+   };
+
    Vec init(1);
    init << 2.0;
 
-   const auto result = find_minimum(f, init, precision);
+   const auto result = find_minimum(f, init, stop_crit);
 
    ASSERT_EQ(result.found, true);
 }
