@@ -16,8 +16,10 @@ TEST(test_parabola, test_1d)
    const double precision = 1e-10;
    const double xoffset = 0.0;
    const double yoffset = 0.0;
+   unsigned ncalls = 0;
 
-   const Fn f = [&xoffset, &yoffset] (const Vec& v) -> Vec {
+   const Fn f = [xoffset, yoffset, &ncalls] (const Vec& v) -> Vec {
+      ncalls++;
       Vec y(v.size());
       y(0) = sqr(v(0) - xoffset) + yoffset;
       return y;
@@ -37,6 +39,7 @@ TEST(test_parabola, test_1d)
    ASSERT_EQ(result.found, true);
    EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_NEAR(result.x(0), xroot, 1e-5);
+   std::cout << "number of function calls: " << ncalls << std::endl;
 }
 
 int main(int argc, char** argv)
