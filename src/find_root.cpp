@@ -154,7 +154,7 @@ Result find_root(const Fn& fn, const Vec& init, Pred stop_crit, const Config& co
    Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), dx(n);
-   auto fold = fmin;
+   Scalar fold = fmin;
 
    while (res.iterations++ < config.max_iterations && !res.found) {
       VERBOSE_MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
@@ -172,7 +172,7 @@ Result find_root(const Fn& fn, const Vec& init, Pred stop_crit, const Config& co
 
       // scale dx if attempted step is too big
       {
-         const auto norm = calc_norm(dx);
+         const Scalar norm = calc_norm(dx);
          if (norm > max_step)
             dx *= max_step/norm;
       }
