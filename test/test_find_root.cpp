@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "find_root.hpp"
 #include <cmath>
+#include <tuple>
 
 namespace {
 
@@ -9,7 +10,7 @@ constexpr double sqr(double x) noexcept { return x*x; }
 } // anonymous namespace
 
 
-class test_1d :public ::testing::TestWithParam<optimize::root::Fn> {
+class test_1d :public ::testing::TestWithParam<std::tuple<optimize::root::Fn, double> > {
 };
 
 
@@ -21,7 +22,7 @@ TEST_P(test_1d, root)
    const Config config;
    unsigned ncalls = 0;
 
-   auto fn = GetParam();
+   auto fn = std::get<0>(GetParam());
 
    const Fn f = [&ncalls, &fn] (const Vec& v) -> Vec {
       ncalls++;
@@ -33,7 +34,7 @@ TEST_P(test_1d, root)
    };
 
    Vec init(1);
-   init << 4.0;
+   init << std::get<1>(GetParam());
 
    const auto result = find_root(f, init, stop_crit, config);
 
@@ -49,17 +50,23 @@ INSTANTIATE_TEST_SUITE_P(
         test_1d,
         ::testing::Values(
            // parabola
-           [] (const optimize::root::Vec& v) -> optimize::root::Vec {
-              optimize::root::Vec y(v.size());
-              y(0) = sqr(v(0) - 0.0) + 0.0;
-              return y;
-           },
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = sqr(v(0) - 0.0) + 0.0;
+                 return y;
+              },
+              2.0
+           ),
            // inverse gauss
-           [] (const optimize::root::Vec& v) -> optimize::root::Vec {
-              optimize::root::Vec y(v.size());
-              y(0) = -std::exp(-v(0)*v(0)) + 0.5;
-              return y;
-           }
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = -std::exp(-v(0)*v(0)) + 0.5;
+                 return y;
+              },
+              4.0
+           )
         ));
 
 
