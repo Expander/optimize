@@ -28,12 +28,16 @@ Scalar calc_max_rel(const Vec& x1, const Vec& x2)
    return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0)).maxCoeff();
 }
 
+Scalar calc_norm(const Vec& x)
+{
+   return std::sqrt(x.dot(x));
+}
+
 Scalar calc_max_step(const Vec& x)
 {
    constexpr Scalar max_step = 100.0;
-   const Scalar sum = x.dot(x);
    const Scalar n = x.size();
-   return max_step*std::max(std::sqrt(sum), n);
+   return max_step*std::max(calc_norm(x), n);
 }
 
 Scalar calc_fmin(const Vec& x)
@@ -151,9 +155,9 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
 
       // scale dx if attempted step is too big
       {
-         const auto sum = std::sqrt(dx.dot(dx));
-         if (sum > max_step)
-            dx *= max_step/sum;
+         const auto norm = calc_norm(dx);
+         if (norm > max_step)
+            dx *= max_step/norm;
       }
 
       grad = jac*res.y;
