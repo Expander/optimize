@@ -10,7 +10,7 @@ constexpr double sqr(double x) noexcept { return x*x; }
 } // anonymous namespace
 
 
-class test_1d :public ::testing::TestWithParam<std::tuple<optimize::root::Fn, double> > {
+class test_1d :public ::testing::TestWithParam<std::tuple<optimize::root::Fn, double, bool> > {
 };
 
 
@@ -38,7 +38,7 @@ TEST_P(test_1d, root)
 
    const auto result = find_root(f, init, stop_crit, config);
 
-   ASSERT_EQ(result.found, true);
+   ASSERT_EQ(result.found, std::get<2>(GetParam()));
    EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_LT(result.iterations, config.max_iterations);
    std::cout << "number of function calls: " << ncalls << std::endl;
@@ -56,7 +56,8 @@ INSTANTIATE_TEST_SUITE_P(
                  y(0) = sqr(v(0) - 0.0) + 0.0;
                  return y;
               },
-              2.0
+              2.0, // init
+              true // found
            ),
            // inverse gauss
            std::make_tuple(
@@ -65,7 +66,8 @@ INSTANTIATE_TEST_SUITE_P(
                  y(0) = -std::exp(-v(0)*v(0)) + 0.5;
                  return y;
               },
-              4.0
+              4.0, // init
+              true // found
            )
         ));
 
