@@ -20,7 +20,7 @@ const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, optimiz
 static void BM_find_root_gauss(benchmark::State& state)
 {
    optimize::root::Vec init(state.range(0));
-   init << 4.0;
+   init.setConstant(4.0);
 
    for (auto _ : state) {
       benchmark::DoNotOptimize(optimize::root::find_root(gauss, init, stop_crit));
