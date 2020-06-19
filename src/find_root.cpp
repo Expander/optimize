@@ -89,7 +89,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
    Scalar alam = 1, alam2 = 0;
    Scalar tmplam = 0, fmin2 = 0;
 
-   while (error) {
+   while (true) {
       x = xold + alam*dx;
       fmin = func(x);
       VERBOSE_MSG("adjust x by dx = " << alam*dx.transpose() << " (fmin = " << fmin << ")");
