@@ -13,7 +13,7 @@ class test_1d :public ::testing::TestWithParam<optimize::root::Fn> {
 };
 
 
-TEST_P(test_1d, OddYearsAreNotLeapYears)
+TEST_P(test_1d, root)
 {
    using namespace optimize::root;
 
@@ -45,7 +45,7 @@ TEST_P(test_1d, OddYearsAreNotLeapYears)
 
 
 INSTANTIATE_TEST_SUITE_P(
-        LeapYearTests,
+        tests_1d,
         test_1d,
         ::testing::Values(
            // parabola
