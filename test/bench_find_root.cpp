@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-static void BM_SomeFunction(benchmark::State& state)
+static void BM_find_root_gauss(benchmark::State& state)
 {
    using namespace optimize::root;
 
@@ -25,7 +25,7 @@ static void BM_SomeFunction(benchmark::State& state)
 }
 
 
-BENCHMARK(BM_SomeFunction);
+BENCHMARK(BM_find_root_gauss);
 
 
 BENCHMARK_MAIN();
