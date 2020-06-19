@@ -10,7 +10,7 @@ static void BM_find_root_gauss(benchmark::State& state)
    const Fn fn = [](const Vec&v) -> Vec {
       Vec y(v.size());
       y(0) = -std::exp(-v(0)*v(0)) + 0.5;
-       return y;
+      return y;
    };
    const Pred stop_crit = [] (const Vec& v, Scalar max_dx) -> bool {
       constexpr double precision = 1e-10;
