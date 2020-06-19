@@ -12,7 +12,6 @@ namespace root {
 namespace {
 
 using Mat = Eigen::MatrixXd;
-constexpr Scalar deriv_eps = 1e-4;
 
 Scalar max_abs(const Vec& x)
 {
@@ -43,7 +42,7 @@ Scalar calc_fmin(const Vec& x)
 }
 
 /// calculates Jacobian, y = f(x)
-Mat fdjac(Fn f, const Vec& x, const Vec& y)
+Mat fdjac(Fn f, const Vec& x, const Vec& y, Scalar derivative_eps)
 {
    const Eigen::Index n = x.size();
    Mat jac(n,n);
@@ -51,9 +50,9 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y)
 
    for (Eigen::Index i = 0; i < n; ++i) {
       const double temp = xn(i);
-      double h = deriv_eps*std::abs(temp);
+      double h = derivative_eps*std::abs(temp);
       if (h == 0)
-         h = deriv_eps;
+         h = derivative_eps;
       xn(i) = temp + h;
       h = xn(i) - temp;
       yn = f(xn);
@@ -135,11 +134,11 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
 }
 
 
-Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
+Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
 {
    Result res{init, fn(init), 0, false};
 
-   if (max_abs(res.y) < 0.01*deriv_eps)
+   if (max_abs(res.y) < 0.01*config.derivative_eps)
       return res;
 
    const auto n = init.size();
@@ -149,13 +148,13 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, unsigned max_iter)
    Vec grad(n), xold(n), dx(n);
    auto fold = fmin;
 
-   while (res.iterations++ < max_iter && !res.found) {
+   while (res.iterations++ < config.max_iterations && !res.found) {
       VERBOSE_MSG("[" << res.iterations << "]: x = " << res.x.transpose() << ", f(x) = " << res.y.transpose());
 
       xold = res.x;
       fold = fmin;
 
-      jac = fdjac(fn, res.x, res.y);
+      jac = fdjac(fn, res.x, res.y, config.derivative_eps);
       dx = jac.colPivHouseholderQr().solve(-res.y);
 
       if (!dx.allFinite()) {
