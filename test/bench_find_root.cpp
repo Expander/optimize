@@ -7,13 +7,13 @@ static void BM_find_root_gauss(benchmark::State& state)
 {
    using namespace optimize::root;
 
-   const double precision = 1e-10;
    const Fn fn = [](const Vec&v) -> Vec {
       Vec y(v.size());
       y(0) = -std::exp(-v(0)*v(0)) + 0.5;
        return y;
    };
-   const Pred stop_crit = [precision] (const Vec& v, Scalar max_dx) -> bool {
+   const Pred stop_crit = [] (const Vec& v, Scalar max_dx) -> bool {
+      constexpr double precision = 1e-10;
       return std::abs(v(0)) < precision || max_dx < precision;
    };
    Vec init(1);
