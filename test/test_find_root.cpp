@@ -71,6 +71,26 @@ INSTANTIATE_TEST_SUITE_P(
               [] { Eigen::VectorXd v(1); v << 4.0; return v; }(), // init
               true // found
            ),
+           // gauss
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = std::exp(-v(0)*v(0));
+                 return y;
+              },
+              [] { Eigen::VectorXd v(1); v << 1.0; return v; }(), // init
+              true // found
+           ),
+           // no root, gauss with cut-off (vanishing gradient)
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = std::abs(v(0)) < 2.0 ? std::exp(-v(0)*v(0)) : std::exp(-2.0*2.0);
+                 return y;
+              },
+              [] { Eigen::VectorXd v(1); v << 1.0; return v; }(), // init
+              false // found
+           ),
            // no root
            std::make_tuple(
               [] (const optimize::root::Vec& v) -> optimize::root::Vec {
