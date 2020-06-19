@@ -23,7 +23,7 @@ struct Result {
 };
 
 /// find minimum of function f
-Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config = Config{});
+Result find_root(const Fn& fn, const Vec& init, Pred stop_crit, const Config& config = Config{});
 
 } // namespace root
 } // namespace optimize

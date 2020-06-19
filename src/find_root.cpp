@@ -51,7 +51,7 @@ Scalar calc_fmin(const Vec& x)
 }
 
 /// calculates Jacobian, y = f(x)
-Mat fdjac(Fn f, const Vec& x, const Vec& y, Scalar derivative_eps)
+Mat fdjac(const Fn& f, const Vec& x, const Vec& y, Scalar derivative_eps)
 {
    const Eigen::Index n = x.size();
    Mat jac(n,n);
@@ -137,7 +137,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 }
 
 
-Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
+Result find_root(const Fn& fn, const Vec& init, Pred stop_crit, const Config& config)
 {
    Result res{init, fn(init), 0, false};
 
