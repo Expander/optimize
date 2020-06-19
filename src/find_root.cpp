@@ -1,11 +1,16 @@
 #include "find_root.hpp"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <Eigen/QR>
 
+#ifdef ENABLE_VERBOSE
+#include <iostream>
 #define VERBOSE_MSG(x) std::cerr << x << std::endl;
 #define ERROR_MSG(x) std::cerr << "Error: " << x << std::endl;
+#else
+#define VERBOSE_MSG(x)
+#define ERROR_MSG(x)
+#endif
 
 namespace optimize {
 namespace root {
