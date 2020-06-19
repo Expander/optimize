@@ -66,9 +66,8 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y, Scalar derivative_eps)
 } // anonymous namespace
 
 /// returns true on error, false otherwise
-template <class Fmin>
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
-                 Vec& x, Scalar& fmin, Scalar max_step, Fmin func)
+                 Vec& x, Scalar& fmin, Scalar max_step)
 {
    constexpr bool ok = false, error = true;
 
@@ -91,7 +90,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
 
    while (true) {
       x = xold + alam*dx;
-      fmin = func(x);
+      fmin = calc_fmin(x);
       VERBOSE_MSG("adjust x by dx = " << alam*dx.transpose() << " (fmin = " << fmin << ")");
 
       if (alam < alamin) {
@@ -163,7 +162,7 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
       }
 
       grad = jac*res.y;
-      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, max_step, [] (const Vec& x) { return calc_fmin(x); });
+      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, max_step);
 
       res.y = fn(res.x);
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
