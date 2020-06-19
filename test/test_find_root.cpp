@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "find_root.hpp"
 #include <cmath>
+#include <limits>
 #include <tuple>
 
 namespace {
@@ -38,8 +39,10 @@ TEST_P(test_1d, root)
    const auto result = find_root(f, init, stop_crit, config);
 
    ASSERT_EQ(result.found, std::get<2>(GetParam()));
-   EXPECT_NEAR(result.y(0), 0.0, precision);
    EXPECT_LT(result.iterations, config.max_iterations);
+   if (result.found) {
+      EXPECT_NEAR(result.y(0), 0.0, precision);
+   }
    std::cout << "number of function calls: " << ncalls << std::endl;
 }
 
@@ -67,6 +70,16 @@ INSTANTIATE_TEST_SUITE_P(
               },
               [] { Eigen::VectorXd v(1); v << 4.0; return v; }(), // init
               true // found
+           ),
+           // no root
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = v(0) > 1.0 ? v(0) : std::numeric_limits<double>::quiet_NaN();
+                 return y;
+              },
+              [] { Eigen::VectorXd v(1); v << 4.0; return v; }(), // init
+              false // found
            )
         ));
 
