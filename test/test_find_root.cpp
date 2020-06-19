@@ -10,7 +10,7 @@ constexpr double sqr(double x) noexcept { return x*x; }
 } // anonymous namespace
 
 
-class test_1d :public ::testing::TestWithParam<std::tuple<optimize::root::Fn, double, bool> > {
+class test_1d :public ::testing::TestWithParam<std::tuple<optimize::root::Fn, Eigen::VectorXd, bool> > {
 };
 
 
@@ -33,8 +33,7 @@ TEST_P(test_1d, root)
       return std::abs(v(0)) < precision || max_dx < precision;
    };
 
-   Vec init(1);
-   init << std::get<1>(GetParam());
+   const Vec init = std::get<1>(GetParam());
 
    const auto result = find_root(f, init, stop_crit, config);
 
@@ -56,7 +55,7 @@ INSTANTIATE_TEST_SUITE_P(
                  y(0) = sqr(v(0) - 0.0) + 0.0;
                  return y;
               },
-              2.0, // init
+              [] { Eigen::VectorXd v(1); v << 2.0; return v; }(), // init
               true // found
            ),
            // inverse gauss
@@ -66,7 +65,7 @@ INSTANTIATE_TEST_SUITE_P(
                  y(0) = -std::exp(-v(0)*v(0)) + 0.5;
                  return y;
               },
-              4.0, // init
+              [] { Eigen::VectorXd v(1); v << 4.0; return v; }(), // init
               true // found
            )
         ));
