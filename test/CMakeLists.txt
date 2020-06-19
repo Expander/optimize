@@ -21,8 +21,9 @@ function(add_optimize_test name)
     ${ARGN}
     )
   add_test(NAME ${name} COMMAND ${name})
-  target_link_libraries(${name} gtest benchmark::benchmark)
+  target_link_libraries(${name} gtest)
 endfunction()
 
+add_optimize_test(bench_find_root benchmark::benchmark)
 add_optimize_test(test_find_minimum)
 add_optimize_test(test_find_root)
