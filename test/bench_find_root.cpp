@@ -3,16 +3,17 @@
 #include <cmath>
 
 
-const optimize::root::Fn gauss = [](const optimize::root::Vec&v) {
+const optimize::root::Fn gauss = [](const optimize::root::Vec& v) {
    optimize::root::Vec y(v.size());
-   y(0) = -std::exp(-v(0)*v(0)) + 0.5;
+   for (Eigen::Index i = 0; i < v.size(); ++i)
+      y(i) = -std::exp(-v(i)*v(i)) + 0.5;
    return y;
 };
 
 
 const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, optimize::root::Scalar max_dx) {
    constexpr double precision = 1e-10;
-   return std::abs(v(0)) < precision || max_dx < precision;
+   return v.cwiseAbs().sum() < precision || max_dx < precision;
 };
 
 
