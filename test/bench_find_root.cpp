@@ -28,7 +28,7 @@ static void BM_find_root_gauss(benchmark::State& state)
 }
 
 
-BENCHMARK(BM_find_root_gauss)->DenseRange(1,10,1);
+BENCHMARK(BM_find_root_gauss)->RangeMultiplier(2)->Range(1, 1 << 12);
 
 
 BENCHMARK_MAIN();
