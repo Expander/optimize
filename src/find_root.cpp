@@ -97,8 +97,6 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
       if (!std::isfinite(fmin))
          return error;
 
-      VERBOSE_MSG("adjust x by dx = " << alam*dx.transpose() << " (fmin = " << fmin << ")");
-
       if (alam < alamin) {
          x = xold;
          return error;
