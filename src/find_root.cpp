@@ -78,7 +78,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
       if (sum > max_step) {
          const double scale = max_step/sum;
          if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
-            return error; // error
+            return error;
          dx *= scale;
       }
    }
