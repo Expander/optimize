@@ -3,25 +3,27 @@
 #include <cmath>
 
 
+const optimize::root::Fn gauss = [](const optimize::root::Vec&v) {
+   optimize::root::Vec y(v.size());
+   y(0) = -std::exp(-v(0)*v(0)) + 0.5;
+   return y;
+};
+
+
+const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, optimize::root::Scalar max_dx) {
+   constexpr double precision = 1e-10;
+   return std::abs(v(0)) < precision || max_dx < precision;
+};
+
+
 static void BM_find_root_gauss(benchmark::State& state)
 {
-   using namespace optimize::root;
-
-   const Fn fn = [](const Vec&v) -> Vec {
-      Vec y(v.size());
-      y(0) = -std::exp(-v(0)*v(0)) + 0.5;
-      return y;
-   };
-   const Pred stop_crit = [] (const Vec& v, Scalar max_dx) -> bool {
-      constexpr double precision = 1e-10;
-      return std::abs(v(0)) < precision || max_dx < precision;
-   };
-   Vec init(1);
+   optimize::root::Vec init(1);
    init << 4.0;
 
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(find_root(fn, init, stop_crit));
-  }
+   for (auto _ : state) {
+      benchmark::DoNotOptimize(optimize::root::find_root(gauss, init, stop_crit));
+   }
 }
 
 
