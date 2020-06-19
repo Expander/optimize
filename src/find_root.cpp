@@ -66,22 +66,10 @@ Mat fdjac(Fn f, const Vec& x, const Vec& y, Scalar derivative_eps)
 } // anonymous namespace
 
 /// returns true on error, false otherwise
-bool line_search(const Vec& xold, Scalar fold, const Vec& grad, Vec& dx,
-                 Vec& x, Scalar& fmin, Scalar max_step)
+bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
+                 Vec& x, Scalar& fmin)
 {
    constexpr bool ok = false, error = true;
-
-   // scale dx if attempted step is too big
-   {
-      const auto sum = std::sqrt(dx.dot(dx));
-      if (sum > max_step) {
-         const double scale = max_step/sum;
-         if (std::abs(scale) <= std::numeric_limits<double>::epsilon())
-            return error;
-         dx *= scale;
-      }
-   }
-
    const Scalar slope = grad.dot(dx);
    const Scalar alf = 1e-4;
    const Scalar alamin = 1e-7/calc_max_rel(dx, xold);
@@ -161,8 +149,15 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
          return res;
       }
 
+      // scale dx if attempted step is too big
+      {
+         const auto sum = std::sqrt(dx.dot(dx));
+         if (sum > max_step)
+            dx *= max_step/sum;
+      }
+
       grad = jac*res.y;
-      const bool err = line_search(xold, fold, grad, dx, res.x, fmin, max_step);
+      const bool err = line_search(xold, fold, grad, dx, res.x, fmin);
 
       res.y = fn(res.x);
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
