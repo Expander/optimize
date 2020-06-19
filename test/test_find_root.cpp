@@ -80,6 +80,16 @@ INSTANTIATE_TEST_SUITE_P(
               },
               [] { Eigen::VectorXd v(1); v << 4.0; return v; }(), // init
               false // found
+           ),
+           // start at zero
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = sqr(v(0) - 0.0) + 0.0;
+                 return y;
+              },
+              [] { Eigen::VectorXd v(1); v << 0.0; return v; }(), // init
+              true // found
            )
         ));
 

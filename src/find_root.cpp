@@ -146,8 +146,10 @@ Result find_root(Fn fn, const Vec& init, Pred stop_crit, const Config& config)
    if (!init.allFinite() || !res.y.allFinite())
       return res;
 
-   if (max_abs(res.y) < 0.01*config.derivative_eps)
+   if (max_abs(res.y) < 0.01*config.derivative_eps) {
+      res.found = true;
       return res;
+   }
 
    const auto n = init.size();
    const Scalar max_step = calc_max_step(res.x);
