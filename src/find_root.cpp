@@ -137,7 +137,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 }
 
 
-Result find_root(const Fn& fn, const Vec& init, Pred stop_crit, const Config& config)
+Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Config& config)
 {
    Result res{init, fn(init), 0, false};
 
