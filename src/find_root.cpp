@@ -88,10 +88,6 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 
    while (true) {
       x = xold + alam*dx;
-
-      if (!x.allFinite())
-         return error;
-
       fmin = func(x);
 
       if (!std::isfinite(fmin))
@@ -184,7 +180,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
 
       res.y = fn(res.x);
 
-      if (!res.x.allFinite() || !res.y.allFinite())
+      if (!res.x.allFinite() || !res.y.allFinite() || !std::isfinite(fmin))
          return res;
 
       res.found = stop_crit(res.y, calc_max_dx(res.x, xold));

@@ -91,7 +91,17 @@ INSTANTIATE_TEST_SUITE_P(
               [] { Eigen::VectorXd v(1); v << 1.0; return v; }(), // init
               false // found
            ),
-           // no root
+           // no root, shifted gauss
+           std::make_tuple(
+              [] (const optimize::root::Vec& v) -> optimize::root::Vec {
+                 optimize::root::Vec y(v.size());
+                 y(0) = std::exp(-v(0)*v(0)) + 1.0;
+                 return y;
+              },
+              [] { Eigen::VectorXd v(1); v << 1.0; return v; }(), // init
+              false // found
+           ),
+           // no root, invalid function
            std::make_tuple(
               [] (const optimize::root::Vec& v) -> optimize::root::Vec {
                  optimize::root::Vec y(v.size());
