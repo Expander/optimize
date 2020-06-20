@@ -80,35 +80,35 @@ Mat fdjac(const Fn& f, const Vec& x, const Vec& y, Scalar derivative_eps)
    return jac;
 }
 
-Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar alam, Scalar alam2, Scalar slope) noexcept
+Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar lam, Scalar lam2, Scalar slope) noexcept
 {
-   Scalar tmplam = 0;
+   Scalar new_lam = 0;
 
-   if (alam == 1) {
+   if (lam == 1) {
       // first time
-      tmplam = -slope/(2*(fmin - fold - slope));
+      new_lam = -slope/(2*(fmin - fold - slope));
    } else {
-      const Scalar rhs1 = fmin - fold - alam*slope;
-      const Scalar rhs2 = fmin2 - fold - alam2*slope;
-      const Scalar a = (rhs1/(alam*alam) - rhs2/(alam2*alam2))/(alam - alam2);
-      const Scalar b = (-alam2*rhs1/(alam*alam) + alam*rhs2/(alam2*alam2))/(alam - alam2);
+      const Scalar rhs1 = fmin - fold - lam*slope;
+      const Scalar rhs2 = fmin2 - fold - lam2*slope;
+      const Scalar a = (rhs1/(lam*lam) - rhs2/(lam2*lam2))/(lam - lam2);
+      const Scalar b = (-lam2*rhs1/(lam*lam) + lam*rhs2/(lam2*lam2))/(lam - lam2);
 
       if (a == 0) {
-         tmplam = -slope/(2.0*b);
+         new_lam = -slope/(2*b);
       } else {
          const Scalar disc = b*b - 3*a*slope;
          if (disc < 0)
-            tmplam = 0.5*alam;
-         else if (b <= 0.0)
-            tmplam = (-b + std::sqrt(disc))/(3*a);
+            new_lam = 0.5*lam;
+         else if (b <= 0)
+            new_lam = (-b + std::sqrt(disc))/(3*a);
          else
-            tmplam = -slope/(b + std::sqrt(disc));
+            new_lam = -slope/(b + std::sqrt(disc));
       }
-      if (tmplam > 0.5*alam)
-         tmplam = 0.5*alam;
+      if (new_lam > 0.5*lam)
+         new_lam = 0.5*lam;
    }
 
-   return tmplam;
+   return new_lam;
 }
 
 } // anonymous namespace
@@ -121,31 +121,31 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
    constexpr bool ok = false, error = true;
    const Scalar slope = grad.dot(dx);
    const Scalar alf = 1e-4;
-   const Scalar alamin = 1e-7/calc_max_rel(dx, xold);
-   Scalar alam = 1, alam2 = 0;
+   const Scalar min_lam = 1e-7/calc_max_rel(dx, xold);
+   Scalar lam = 1, lam2 = 0;
    Scalar fmin2 = 0;
 
    while (true) {
-      x = xold + alam*dx;
+      x = xold + lam*dx;
       fmin = func(x);
 
       if (!std::isfinite(fmin))
          return error;
 
-      if (alam < alamin) {
+      if (lam < min_lam) {
          x = xold;
          fmin = fold;
          return error;
       }
 
-      if (fmin <= fold + alf*alam*slope)
+      if (fmin <= fold + alf*lam*slope)
          break;
 
-      const Scalar tmplam = calc_lam(fold, fmin, fmin2, alam, alam2, slope);
+      const Scalar new_lam = calc_lam(fold, fmin, fmin2, lam, lam2, slope);
 
-      alam2 = alam;
+      lam2 = lam;
       fmin2 = fmin;
-      alam = std::max(tmplam, 0.1*alam);
+      lam = std::max(new_lam, 0.1*lam);
    }
 
    return ok;
