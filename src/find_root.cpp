@@ -50,6 +50,14 @@ Scalar calc_fmin(const Vec& x)
    return 0.5*x.dot(x);
 }
 
+/// scale dx if attempted step is too big
+void restrict_dx(Vec& dx, Scalar max_step)
+{
+   const Scalar norm = calc_norm(dx);
+   if (norm > max_step)
+      dx *= max_step/norm;
+}
+
 /// calculates Jacobian, y = f(x)
 Mat fdjac(const Fn& f, const Vec& x, const Vec& y, Scalar derivative_eps)
 {
@@ -167,12 +175,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
          return res;
       }
 
-      // scale dx if attempted step is too big
-      {
-         const Scalar norm = calc_norm(dx);
-         if (norm > max_step)
-            dx *= max_step/norm;
-      }
+      restrict_dx(dx, max_step);
 
       grad = jac*res.y;
       const bool err = line_search(xold, fold, grad, dx, res.x, fmin,
