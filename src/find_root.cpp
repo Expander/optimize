@@ -120,7 +120,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 {
    constexpr bool ok = false, error = true;
    const Scalar slope = grad.dot(dx);
-   const Scalar alf = 1e-4;
+   const Scalar alpha = 1e-4;
    const Scalar min_lam = 1e-7/calc_max_rel(dx, xold);
    Scalar lam = 1, lam2 = 0;
    Scalar fmin2 = 0;
@@ -138,7 +138,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
          return error;
       }
 
-      if (fmin <= fold + alf*lam*slope)
+      if (fmin <= fold + alpha*lam*slope)
          break;
 
       const Scalar new_lam = calc_lam(fold, fmin, fmin2, lam, lam2, slope);
