@@ -137,9 +137,9 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
          fmin = fold;
          return error;
       }
-      if (fmin <= fold + alf*alam*slope) {
-         return ok;
-      }
+
+      if (fmin <= fold + alf*alam*slope)
+         break;
 
       const Scalar tmplam = calc_lam(fold, fmin, fmin2, alam, alam2, slope);
 
