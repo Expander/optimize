@@ -114,9 +114,8 @@ Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar lam, Scalar lam2,
 } // anonymous namespace
 
 /// returns true on error, false otherwise
-template <class Fmin>
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
-                 Vec& x, Scalar& fmin, Fmin func)
+                 Vec& x, Vec& y, Scalar& fmin, const Fn& fn)
 {
    constexpr bool ok = false, error = true;
    const Scalar slope = grad.dot(dx);
@@ -127,7 +126,8 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 
    while (true) {
       x = xold + lam*dx;
-      fmin = func(x);
+      y = fn(x);
+      fmin = calc_fmin(y);
 
       if (!std::isfinite(fmin))
          return error;
@@ -188,10 +188,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       restrict_dx(dx, max_step);
 
       grad = jac*res.y;
-      const bool err = line_search(xold, fold, grad, dx, res.x, fmin,
-                                   [&fn] (const Vec& x) { return calc_fmin(fn(x)); });
-
-      res.y = fn(res.x);
+      const bool err = line_search(xold, fold, grad, dx, res.x, res.y, fmin, fn);
 
       if (!res.x.allFinite() || !res.y.allFinite() || !std::isfinite(fmin))
          return res;
