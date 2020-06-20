@@ -16,9 +16,9 @@ struct Config {
 };
 
 struct Result {
-   Vec x;                  ///< point where zero is located
+   Vec x;                  ///< the zero of the function
    Vec y;                  ///< function value at x
-   unsigned iterations{0}; ///< number of iterations
+   unsigned iterations{0}; ///< number of performed iterations
    bool found{false};      ///< zero has been found
 };
 
