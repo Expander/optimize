@@ -28,7 +28,7 @@ Scalar calc_max_dx(const Vec& x1, const Vec& x2)
    return (x1 - x2).cwiseAbs().cwiseProduct(x1.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
 }
 
-Scalar calc_max_rel(const Vec& x1, const Vec& x2)
+Scalar calc_max_quotient(const Vec& x1, const Vec& x2)
 {
    return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0)).maxCoeff();
 }
@@ -121,7 +121,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
    constexpr bool ok = false, error = true;
    const Scalar slope = grad.dot(dx);
    const Scalar alpha = 1e-4;
-   const Scalar min_lam = 1e-7/calc_max_rel(dx, xold);
+   const Scalar min_lam = 1e-7/calc_max_quotient(dx, xold);
    Scalar lam = 1, lam2 = 0;
    Scalar fmin2 = 0;
 
@@ -204,7 +204,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       // check for grad(f) being zero (spurious convergence)
       if (err) {
          const Scalar den = std::max(fmin, 0.5*n);
-         const Scalar max_grad = calc_max_rel(grad, res.x)/den;
+         const Scalar max_grad = calc_max_quotient(grad, res.x)/den;
          res.found = max_grad >= 1e-6;
          return res;
       }
