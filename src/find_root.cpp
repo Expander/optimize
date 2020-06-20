@@ -23,7 +23,7 @@ Scalar max_abs(const Vec& x)
    return x.cwiseAbs().maxCoeff();
 }
 
-Scalar calc_max_dx(const Vec& x1, const Vec& x2)
+Scalar calc_max_rel_diff(const Vec& x1, const Vec& x2)
 {
    return (x1 - x2).cwiseAbs().cwiseProduct(x1.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
 }
@@ -192,7 +192,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       if (!res.x.allFinite() || !res.y.allFinite() || !std::isfinite(fmin))
          return res;
 
-      res.found = stop_crit(res.y, calc_max_dx(res.x, xold));
+      res.found = stop_crit(res.y, calc_max_rel_diff(res.x, xold));
 
       if (res.found)
          return res;
