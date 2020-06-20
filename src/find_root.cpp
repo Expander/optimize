@@ -164,7 +164,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
    }
 
    const auto n = init.size();
-   const Scalar max_step = calc_max_step(res.x, 100.0);
+   const Scalar max_step = calc_max_step(res.x, config.max_step);
    Scalar fmin = calc_fmin(res.y);
    Mat jac(n,n);
    Vec grad(n), xold(n), dx(n);

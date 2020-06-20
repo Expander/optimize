@@ -12,6 +12,7 @@ using Pred = std::function<bool(const Vec&, Scalar)>;
 
 struct Config {
    Scalar derivative_eps{1.0e-4}; ///< epsilon for numerical derivative
+   Scalar max_step{100.0};        ///< maximum step length
    unsigned max_iterations{200};  ///< maximum number of iterations
 };
 
