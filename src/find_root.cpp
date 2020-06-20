@@ -18,7 +18,7 @@ namespace {
 
 using Mat = Eigen::MatrixXd;
 
-Scalar max_abs(const Vec& x)
+Scalar calc_max_abs(const Vec& x)
 {
    return x.cwiseAbs().maxCoeff();
 }
@@ -158,7 +158,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
    if (!init.allFinite() || !res.y.allFinite())
       return res;
 
-   if (max_abs(res.y) < 0.01*config.derivative_eps) {
+   if (calc_max_abs(res.y) < 0.01*config.derivative_eps) {
       res.found = true;
       return res;
    }
