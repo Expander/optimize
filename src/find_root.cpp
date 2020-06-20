@@ -99,6 +99,7 @@ bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
 
       if (alam < alamin) {
          x = xold;
+         fmin = fold;
          return error;
       } else if (fmin <= fold + alf*alam*slope) {
          return ok;
