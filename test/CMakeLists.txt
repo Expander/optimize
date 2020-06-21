@@ -9,6 +9,12 @@ add_subdirectory(google/benchmark)
 # build tests (targets: gtest_main, gtest)
 add_subdirectory(google/googletest)
 
+# test library with GSL wrappers
+add_library(optimize-gsl
+  find_root_gsl.cpp
+)
+target_include_directories(optimize-gsl PRIVATE $<TARGET_PROPERTY:optimize,INCLUDE_DIRECTORIES>)
+
 function(add_optimize_test name)
   add_executable(
     ${name}
@@ -17,6 +23,7 @@ function(add_optimize_test name)
   target_link_libraries(
     ${name}
     optimize
+    optimize-gsl
     GSL::gsl
     ${ARGN}
     )

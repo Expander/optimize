@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "find_root.hpp"
+#include "find_root_gsl.hpp"
 #include <cmath>
 #include <limits>
 #include <tuple>
