@@ -28,11 +28,6 @@ Scalar calc_max_quotient(const Vec& x1, const Vec& x2)
    return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
 }
 
-Scalar calc_max_rel_diff(const Vec& x1, const Vec& x2)
-{
-   return calc_max_quotient(x1 - x2, x1);
-}
-
 Scalar calc_norm(const Vec& x)
 {
    return std::sqrt(x.dot(x));
@@ -192,7 +187,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       if (!res.x.allFinite() || !res.y.allFinite() || !std::isfinite(fmin))
          return res;
 
-      res.found = stop_crit(res.y, calc_max_rel_diff(res.x, xold));
+      res.found = stop_crit(res.y, res.x - xold);
 
       if (res.found)
          return res;

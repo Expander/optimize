@@ -17,6 +17,14 @@ bool is_finite(const gsl_vector* x)
    return true;
 }
 
+Vec to_vec(const gsl_vector* x)
+{
+   Vec v(x->size);
+   for (std::size_t i = 0; i < x->size; i++)
+      v(i) = gsl_vector_get(x, i);
+   return v;
+}
+
 static int gsl_function(const gsl_vector* x, void* parameters, gsl_vector* f)
 {
    if (!is_finite(x)) {
@@ -26,11 +34,8 @@ static int gsl_function(const gsl_vector* x, void* parameters, gsl_vector* f)
 
    Fn* fun = static_cast<Fn*>(parameters);
    int status = GSL_SUCCESS;
-   Vec arg(x->size);
+   Vec arg(to_vec(x));
    Vec result(x->size);
-
-   for (std::size_t i = 0; i < x->size; i++)
-      arg(i) = gsl_vector_get(x, i);
 
    result.setConstant(std::numeric_limits<double>::max());
 
@@ -82,12 +87,14 @@ Result find_root_gsl(const Fn& fn, const Vec& init, const Pred& stop_crit, const
       if (status)   // check if solver is stuck
          break;
 
-      status = gsl_multiroot_test_residual(solver->f, 1e-10);
+      status = stop_crit(to_vec(gsl_multiroot_fsolver_f(solver)),
+                         to_vec(gsl_multiroot_fsolver_dx(solver)))
+                  ? GSL_SUCCESS
+                  : GSL_CONTINUE;
+
    } while (status == GSL_CONTINUE && iter < config.max_iterations);
 
-   for (std::size_t i = 0; i < n; ++i)
-      res.x(i) = gsl_vector_get(solver->x, i);
-
+   res.x = to_vec(solver->x);
    res.found = status == GSL_SUCCESS;
 
    gsl_vector_free(x);

@@ -12,9 +12,9 @@ const optimize::root::Fn gauss = [](const optimize::root::Vec& v) {
 };
 
 
-const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, optimize::root::Scalar max_dx) {
+const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, const optimize::root::Vec& dx) {
    constexpr double precision = 1e-10;
-   return v.cwiseAbs().sum() < precision || max_dx < precision;
+   return v.cwiseAbs().sum() < precision || dx.cwiseAbs().sum() < precision;
 };
 
 

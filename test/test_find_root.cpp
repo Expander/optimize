@@ -31,8 +31,8 @@ TEST_P(test_1d, root)
       return fn(v);
    };
 
-   const Pred stop_crit = [precision] (const Vec& v, Scalar max_dx) -> bool {
-      return std::abs(v(0)) < precision || max_dx < precision;
+   const Pred stop_crit = [precision] (const Vec& v, const Vec& dx) -> bool {
+      return std::abs(v(0)) < precision || std::abs(dx(0)) < precision;
    };
 
    const Vec init = std::get<1>(GetParam());
