@@ -23,14 +23,14 @@ Scalar calc_max_abs(const Vec& x)
    return x.cwiseAbs().maxCoeff();
 }
 
-Scalar calc_max_rel_diff(const Vec& x1, const Vec& x2)
-{
-   return (x1 - x2).cwiseAbs().cwiseProduct(x1.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
-}
-
 Scalar calc_max_quotient(const Vec& x1, const Vec& x2)
 {
-   return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0)).maxCoeff();
+   return x1.cwiseAbs().cwiseProduct(x2.cwiseAbs().cwiseMax(1.0).cwiseInverse()).maxCoeff();
+}
+
+Scalar calc_max_rel_diff(const Vec& x1, const Vec& x2)
+{
+   return calc_max_quotient(x1 - x2, x1);
 }
 
 Scalar calc_norm(const Vec& x)
