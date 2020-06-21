@@ -1,5 +1,6 @@
 #include <benchmark/benchmark.h>
 #include "find_root.hpp"
+#include "find_root_gsl.hpp"
 #include <cmath>
 
 
@@ -28,7 +29,19 @@ static void BM_find_root_gauss(benchmark::State& state)
 }
 
 
-BENCHMARK(BM_find_root_gauss)->RangeMultiplier(2)->Range(1, 1 << 12);
+static void BM_find_root_gauss_gsl(benchmark::State& state)
+{
+   optimize::root::Vec init(state.range(0));
+   init.setConstant(4.0);
+
+   for (auto _ : state) {
+      benchmark::DoNotOptimize(optimize::root::find_root_gsl(gauss, init, stop_crit));
+   }
+}
+
+
+BENCHMARK(BM_find_root_gauss)    ->RangeMultiplier(2)->Range(1, 1 << 12);
+BENCHMARK(BM_find_root_gauss_gsl)->RangeMultiplier(2)->Range(1, 1 << 12);
 
 
 BENCHMARK_MAIN();
