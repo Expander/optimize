@@ -31,13 +31,9 @@ TEST_P(test_1d, root)
       return fn(v);
    };
 
-   const Pred stop_crit = [precision] (const Vec& v, const Vec& dx) -> bool {
-      return std::abs(v(0)) < precision || std::abs(dx(0)) < precision;
-   };
-
    const Vec init = std::get<1>(GetParam());
 
-   const auto result = find_root(f, init, stop_crit, config);
+   const auto result = find_root(f, init);
 
    ASSERT_EQ(result.found, std::get<2>(GetParam()));
    EXPECT_LT(result.iterations, config.max_iterations);

@@ -12,19 +12,13 @@ const optimize::root::Fn gauss = [](const optimize::root::Vec& v) {
 };
 
 
-const optimize::root::Pred stop_crit = [] (const optimize::root::Vec& v, const optimize::root::Vec& dx) {
-   constexpr double precision = 1e-10;
-   return v.cwiseAbs().sum() < precision || dx.cwiseAbs().sum() < precision;
-};
-
-
 static void BM_find_root_gauss(benchmark::State& state)
 {
    optimize::root::Vec init(state.range(0));
    init.setConstant(4.0);
 
    for (auto _ : state) {
-      benchmark::DoNotOptimize(optimize::root::find_root(gauss, init, stop_crit));
+      benchmark::DoNotOptimize(optimize::root::find_root(gauss, init));
    }
 }
 
@@ -35,7 +29,7 @@ static void BM_find_root_gauss_gsl(benchmark::State& state)
    init.setConstant(4.0);
 
    for (auto _ : state) {
-      benchmark::DoNotOptimize(optimize::root::find_root_gsl(gauss, init, stop_crit));
+      benchmark::DoNotOptimize(optimize::root::find_root_gsl(gauss, init));
    }
 }
 

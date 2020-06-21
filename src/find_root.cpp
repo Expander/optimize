@@ -107,6 +107,13 @@ Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar lam, Scalar lam2,
 
 } // anonymous namespace
 
+
+const Pred default_stop_crit = [] (const Vec& y, const Vec& /* dx */) {
+   constexpr Scalar eps = 1.0e-10;
+   return y.cwiseAbs().sum() < eps;
+};
+
+
 /// returns true on error, false otherwise
 bool line_search(const Vec& xold, Scalar fold, const Vec& grad, const Vec& dx,
                  Vec& x, Vec& y, Scalar& fmin, const Fn& fn)

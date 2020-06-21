@@ -23,8 +23,12 @@ struct Result {
    bool found{false};      ///< zero has been found
 };
 
+extern const Pred default_stop_crit; ///< default stop criterion
+
 /// find minimum of function f
-Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Config& config = Config{});
+Result find_root(const Fn& fn, const Vec& init,
+                 const Pred& stop_crit = default_stop_crit,
+                 const Config& config = Config{});
 
 } // namespace root
 } // namespace optimize
