@@ -108,7 +108,7 @@ Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar lam, Scalar lam2,
 } // anonymous namespace
 
 
-const Pred default_stop_crit = [] (const Vec& y, const Vec& /* dx */) {
+const Pred default_stop_crit = [] (const Vec& x, const Vec& y, const Vec& dx) {
    constexpr Scalar eps = 1.0e-10;
    return y.cwiseAbs().sum() < eps;
 };
@@ -194,7 +194,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       if (!res.x.allFinite() || !res.y.allFinite() || !std::isfinite(fmin))
          return res;
 
-      res.found = stop_crit(res.y, res.x - xold);
+      res.found = stop_crit(res.x, res.y, res.x - xold);
 
       if (res.found)
          return res;

@@ -97,7 +97,8 @@ Result find_root_gsl(const Fn& fn, const Vec& init, const Pred& stop_crit, const
       if (status)   // check if solver is stuck
          break;
 
-      status = stop_crit(to_vec(gsl_multiroot_fsolver_f(solver)),
+      status = stop_crit(to_vec(solver->x),
+                         to_vec(gsl_multiroot_fsolver_f(solver)),
                          to_vec(gsl_multiroot_fsolver_dx(solver)))
                   ? GSL_SUCCESS
                   : GSL_CONTINUE;

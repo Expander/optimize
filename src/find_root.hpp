@@ -8,7 +8,7 @@ namespace root {
 using Scalar = double;
 using Vec = Eigen::VectorXd;
 using Fn = std::function<Vec(const Vec&)>;
-using Pred = std::function<bool(const Vec&, const Vec&)>;
+using Pred = std::function<bool(const Vec&, const Vec&, const Vec&)>;
 
 struct Config {
    Scalar derivative_eps{1.0e-4}; ///< epsilon for numerical derivative
