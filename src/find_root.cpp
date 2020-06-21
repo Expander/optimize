@@ -110,7 +110,7 @@ Scalar calc_lam(Scalar fold, Scalar fmin, Scalar fmin2, Scalar lam, Scalar lam2,
 
 const Pred default_stop_crit = [] (const Vec& x, const Vec& y, const Vec& dx) {
    constexpr Scalar eps = 1.0e-10;
-   return y.cwiseAbs().sum() < eps;
+   return y.cwiseAbs().sum() < eps || calc_max_quotient(dx, x) < eps;
 };
 
 
