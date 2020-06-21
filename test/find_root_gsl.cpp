@@ -53,15 +53,25 @@ static int gsl_function(const gsl_vector* x, void* parameters, gsl_vector* f)
    return status;
 }
 
-const gsl_multiroot_fsolver_type* solver_type_to_gsl_pointer()
+const gsl_multiroot_fsolver_type* get_solver_type(GSL_solver_type solver_type)
 {
-   return gsl_multiroot_fsolver_hybrid;
+   const gsl_multiroot_fsolver_type* st = gsl_multiroot_fsolver_hybrid;
+
+   switch (solver_type) {
+      case GSL_solver_type::hybrid:  st = gsl_multiroot_fsolver_hybrid;  break;
+      case GSL_solver_type::hybrids: st = gsl_multiroot_fsolver_hybrids; break;
+      case GSL_solver_type::newton:  st = gsl_multiroot_fsolver_dnewton; break;
+      case GSL_solver_type::broyden: st = gsl_multiroot_fsolver_broyden; break;
+      default: break;
+   }
+
+   return st;
 }
 
 } // anonymous namespace
 
 /// find minimum of function f (GSL wrapper)
-Result find_root_gsl(const Fn& fn, const Vec& init, const Pred& stop_crit, const Config& config)
+Result find_root_gsl(const Fn& fn, const Vec& init, const Pred& stop_crit, const Config& config, GSL_solver_type solver_type)
 {
    const std::size_t n = init.size();
    Result res{init, Vec::Zero(n), 0, false};
@@ -76,7 +86,7 @@ Result find_root_gsl(const Fn& fn, const Vec& init, const Pred& stop_crit, const
       gsl_vector_set(x, 0, init(i));
 
    gsl_multiroot_fsolver* solver
-      = gsl_multiroot_fsolver_alloc(solver_type_to_gsl_pointer(), n);
+      = gsl_multiroot_fsolver_alloc(get_solver_type(solver_type), n);
 
    gsl_multiroot_fsolver_set(solver, &f, x);
 
