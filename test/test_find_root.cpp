@@ -35,7 +35,7 @@ TEST_P(test_1d, root)
 
    const auto result = find_root(f, init);
 
-   ASSERT_EQ(result.found, std::get<2>(GetParam()));
+   EXPECT_EQ(result.found, std::get<2>(GetParam()));
    EXPECT_LT(result.iterations, config.max_iterations);
    if (result.found) {
       EXPECT_NEAR(result.y(0), 0.0, precision);
