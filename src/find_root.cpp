@@ -1,7 +1,7 @@
 #include "find_root.hpp"
 #include <algorithm>
 #include <cmath>
-#include <Eigen/QR>
+#include <Eigen/LU>
 
 #ifdef ENABLE_VERBOSE
 #include <iostream>
@@ -179,7 +179,7 @@ Result find_root(const Fn& fn, const Vec& init, const Pred& stop_crit, const Con
       fold = fmin;
 
       jac = fdjac(fn, res.x, res.y, config.derivative_eps);
-      dx = jac.colPivHouseholderQr().solve(-res.y);
+      dx = jac.partialPivLu().solve(-res.y);
 
       if (!dx.allFinite()) {
          ERROR_MSG("dx is infinite");
